@@ -81,28 +81,45 @@ iframe {
 <script>
 function entrar() {
     const nome = document.getElementById("nome").value.trim() || "Desconhecido";
+    // Salvar cookie corretamente
     document.cookie = `usuario=${encodeURIComponent(nome)}; path=/; max-age=${60*60*24*365}; SameSite=Lax`;
+    
+    // Esconder modal e mostrar iframe
     document.getElementById("modal").style.display = "none";
     document.getElementById("pbiFrame").style.display = "block";
 
-    // Registro simplificado
+    // Registro no Google Sheets
     fetch("https://script.google.com/macros/s/AKfycbw8L0ZxkZxQ6E7BuqNPJDlr_xZTBVP12I8duKiU-Us1bS5slw7UJp_obNTrv2KuAuo/exec", {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuario: nome, link: window.location.href, horario: new Date().toISOString(), dispositivo: navigator.userAgent })
+        body: JSON.stringify({
+            usuario: nome,
+            link: window.location.href,
+            horario: new Date().toISOString(),
+            dispositivo: navigator.userAgent
+        })
     });
 }
 
 // Verificar cookie ao carregar
 window.onload = function() {
-    const cookies = document.cookie.split(";").map(c=>c.trim());
-    const usuarioCookie = cookies.find(c=>c.startsWith("usuario="));
-    if(usuarioCookie){
+    const usuario = getCookie("usuario");
+    if(usuario){
+        // Se cookie existir, esconder modal e mostrar iframe
         document.getElementById("modal").style.display = "none";
         document.getElementById("pbiFrame").style.display = "block";
+    } else {
+        // Se não existir, mostrar modal
+        document.getElementById("modal").style.display = "flex";
     }
 };
+
+// Função para ler cookie
+function getCookie(nome) {
+    const match = document.cookie.match(new RegExp('(^| )' + nome + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
 </script>
 
 </body>
