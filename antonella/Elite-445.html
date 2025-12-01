@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard 1</title>
+<title>Dashboard</title>
 <link rel="icon" href="icon.png" type="image/png">
 <style>
 html, body {
@@ -23,29 +23,89 @@ iframe {
     height: 100%;
     border: none;
 }
+
+#bemVindo {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: rgba(255,255,255,0.9);
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: #333;
+    font-size: 1.2em;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 1s;
+}
 </style>
 </head>
 <body>
 
-<h2 id="bemVindo" style="position:fixed;top:10px;left:10px;z-index:9999;color:#333;"></h2>
+<h2 id="bemVindo"></h2>
 
 <iframe id="pbiFrame" src="https://app.powerbi.com/view?r=eyJrIjoiZWYxMWNjYWYtMmQ1Yi00NzQ0LWE0YTYtY2FkM2YyMDQ5MmIxIiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9"></iframe>
 
-<script src="../scripts/registro.js"></script>
 <script>
+// ---------------- Cookie ----------------
+function getCookie(nome) {
+    const match = document.cookie.match(new RegExp('(^| )' + nome + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+
+// ---------------- Registro no Google Sheets ----------------
+async function registrarAcesso(usuario) {
+    const apiUrl = "https://script.google.com/macros/s/AKfycbw8L0ZxkZxQ6E7BuqNPJDlr_xZTBVP12I8duKiU-Us1bS5slw7UJp_obNTrv2KuAuo/exec";
+    const dispositivo = navigator.userAgent;
+    const horario = new Date().toISOString();
+    const link = window.location.href;
+
+    let ip = "";
+    try {
+        const r = await fetch("https://api.ipify.org?format=json");
+        ip = (await r.json()).ip;
+    } catch(e){}
+
+    fetch(apiUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuario, link, horario, dispositivo, ip })
+    });
+}
+
+// ---------------- Solicitar nome ----------------
+function solicitarNomeERegistrar() {
+    const usuario = prompt("Digite seu nome para acessar:") || "Desconhecido";
+    document.cookie = `usuario=${encodeURIComponent(usuario)}; path=/; max-age=${60*60*24*365}; SameSite=Lax`;
+    registrarAcesso(usuario);
+    return usuario;
+}
+
+// ---------------- Carregamento da página ----------------
 window.onload = function() {
     let usuario = getCookie("usuario");
+    const bemVindo = document.getElementById("bemVindo");
+    const iframe = document.getElementById("pbiFrame");
+
     if(usuario){
-        // Já existe cookie
-        document.getElementById("pbiFrame").style.display = "block";
-        document.getElementById("bemVindo").innerText = `Bem-vindo de volta, ${usuario}!`;
-        registrarAcesso(usuario); // registra novamente a visita
+        // Usuário já existe
+        iframe.style.display = "block";
+        bemVindo.innerText = `Bem-vindo de volta, ${usuario}!`;
+        registrarAcesso(usuario);
     } else {
-        // Não existe cookie → solicita nome
+        // Novo usuário
         usuario = solicitarNomeERegistrar();
-        document.getElementById("bemVindo").innerText = `Bem-vindo, ${usuario}!`;
-        document.getElementById("pbiFrame").style.display = "block";
+        bemVindo.innerText = `Bem-vindo, ${usuario}!`;
+        iframe.style.display = "block";
     }
+
+    // Mostrar mensagem temporária
+    bemVindo.style.opacity = "1";
+    setTimeout(() => {
+        bemVindo.style.opacity = "0";
+    }, 3000);
 };
 </script>
 
