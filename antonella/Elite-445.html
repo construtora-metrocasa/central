@@ -52,23 +52,33 @@ function getCookie(nome) {
     return match ? decodeURIComponent(match[2]) : null;
 }
 
+// ---------------- Função para pegar IP ----------------
+async function getIP() {
+    try {
+        const r = await fetch("https://api.ipify.org?format=json");
+        return (await r.json()).ip;
+    } catch(e){
+        return "";
+    }
+}
+
 // ---------------- Registro no Google Sheets ----------------
 async function registrarAcesso(usuario) {
     const apiUrl = "https://script.google.com/macros/s/AKfycbw8L0ZxkZxQ6E7BuqNPJDlr_xZTBVP12I8duKiU-Us1bS5slw7UJp_obNTrv2KuAuo/exec";
     const dispositivo = navigator.userAgent;
     const horario = new Date().toISOString();
     const link = window.location.href;
-    let ip = "";
+    const ip = await getIP();
+
     try {
-        const r = await fetch("https://api.ipify.org?format=json");
-        ip = (await r.json()).ip;
-    } catch(e){}
-    fetch(apiUrl, {
-        method:"POST",
-        mode:"no-cors",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({usuario, link, horario, dispositivo, ip})
-    });
+        await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({usuario, link, horario, dispositivo, ip})
+        });
+    } catch(e){
+        console.error("Erro ao registrar acesso:", e);
+    }
 }
 
 // ---------------- Solicitar nome ----------------
@@ -82,9 +92,14 @@ function solicitarNomeERegistrar() {
 // ---------------- Buscar lista de apelidos via Apps Script ----------------
 async function pegarUsuariosPermitidos() {
     const url = "https://script.google.com/macros/s/AKfycbyNNceznzsqMdS9Us0HJ2a9y-hCCEPMOOzqTfsnXu4iJ_BRmfz-JhJrfT88d8MAJSM/exec";
-    const resposta = await fetch(url);
-    const lista = await resposta.json();
-    return lista;
+    try {
+        const resposta = await fetch(url);
+        const lista = await resposta.json();
+        return lista;
+    } catch(e){
+        console.error("Erro ao buscar usuários permitidos:", e);
+        return [];
+    }
 }
 
 // ---------------- Carregamento da página ----------------
