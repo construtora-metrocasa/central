@@ -84,9 +84,10 @@ async function registrarAcesso(usuario) {
 // ---------------- Solicitar nome ----------------
 function solicitarNomeERegistrar() {
     const usuario = prompt("Digite seu nome para acessar:") || "Desconhecido";
-    document.cookie = `usuario=${encodeURIComponent(usuario)}; path=/; max-age=${60*60*24*365}; SameSite=Lax`;
-    registrarAcesso(usuario);
-    return usuario;
+    const usuarioNormalizado = usuario.trim().toUpperCase();
+    document.cookie = `usuario=${encodeURIComponent(usuarioNormalizado)}; path=/; max-age=${60*60*24*365}; SameSite=Lax`;
+    registrarAcesso(usuarioNormalizado);
+    return usuarioNormalizado;
 }
 
 // ---------------- Buscar lista de apelidos via Apps Script ----------------
@@ -95,7 +96,9 @@ async function pegarUsuariosPermitidos() {
     try {
         const resposta = await fetch(url);
         const lista = await resposta.json();
-        return lista;
+
+        // Normaliza: remove espaços e transforma em maiúsculas
+        return lista.map(u => u.trim().toUpperCase());
     } catch(e){
         console.error("Erro ao buscar usuários permitidos:", e);
         return [];
@@ -112,7 +115,9 @@ window.onload = async function() {
         usuario = solicitarNomeERegistrar();
     }
 
-    // Pega lista de usuários permitidos do Apps Script
+    // Normaliza usuário
+    usuario = usuario.trim().toUpperCase();
+
     const usuariosPermitidos = await pegarUsuariosPermitidos();
 
     // Validação
