@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title>
+<title>Página2 - Dashboard</title>
 <link rel="icon" href="icon.png" type="image/png">
 <style>
 html, body {
@@ -14,7 +14,6 @@ html, body {
     overflow: hidden;
     font-family: Arial, sans-serif;
 }
-
 iframe {
     position: fixed;
     top: 0;
@@ -23,7 +22,6 @@ iframe {
     height: 100%;
     border: none;
 }
-
 #bemVindo {
     position: fixed;
     top: 10px;
@@ -45,7 +43,7 @@ iframe {
 
 <h2 id="bemVindo"></h2>
 
-<iframe id="pbiFrame" src="https://app.powerbi.com/view?r=eyJrIjoiZWYxMWNjYWYtMmQ1Yi00NzQ0LWE0YTYtY2FkM2YyMDQ5MmIxIiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9"></iframe>
+<iframe id="pbiFrame" src="https://app.powerbi.com/view?r=eyJrIjoiNjk0NGQ1M2ItNWZlNS00YzI2LTkwOGQtZWZlZmUyNmU1MGIzIiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9"></iframe>
 
 <script>
 // ---------------- Cookie ----------------
@@ -60,18 +58,16 @@ async function registrarAcesso(usuario) {
     const dispositivo = navigator.userAgent;
     const horario = new Date().toISOString();
     const link = window.location.href;
-
     let ip = "";
     try {
         const r = await fetch("https://api.ipify.org?format=json");
         ip = (await r.json()).ip;
     } catch(e){}
-
     fetch(apiUrl, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuario, link, horario, dispositivo, ip })
+        method:"POST",
+        mode:"no-cors",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({usuario, link, horario, dispositivo, ip})
     });
 }
 
@@ -83,29 +79,42 @@ function solicitarNomeERegistrar() {
     return usuario;
 }
 
+// ---------------- Buscar lista de apelidos via Apps Script ----------------
+async function pegarUsuariosPermitidos() {
+    const url = "https://script.google.com/macros/s/AKfycbyNNceznzsqMdS9Us0HJ2a9y-hCCEPMOOzqTfsnXu4iJ_BRmfz-JhJrfT88d8MAJSM/exec";
+    const resposta = await fetch(url);
+    const lista = await resposta.json();
+    return lista;
+}
+
 // ---------------- Carregamento da página ----------------
-window.onload = function() {
+window.onload = async function() {
     let usuario = getCookie("usuario");
     const bemVindo = document.getElementById("bemVindo");
     const iframe = document.getElementById("pbiFrame");
 
-    if(usuario){
-        // Usuário já existe
-        iframe.style.display = "block";
-        bemVindo.innerText = `Bem-vindo de volta, ${usuario}!`;
-        registrarAcesso(usuario);
-    } else {
-        // Novo usuário
+    if(!usuario){
         usuario = solicitarNomeERegistrar();
-        bemVindo.innerText = `Bem-vindo, ${usuario}!`;
-        iframe.style.display = "block";
     }
 
-    // Mostrar mensagem temporária
+    // Pega lista de usuários permitidos do Apps Script
+    const usuariosPermitidos = await pegarUsuariosPermitidos();
+
+    // Validação
+    if(!usuariosPermitidos.includes(usuario)){
+        alert("Você não tem permissão para acessar esta página!");
+        window.location.href = "https://www.google.com";
+        return;
+    }
+
+    // Usuário permitido → mostra iframe e mensagem
+    iframe.style.display = "block";
+    bemVindo.innerText = `Bem-vindo, ${usuario}!`;
+    registrarAcesso(usuario);
+
+    // Mensagem temporária
     bemVindo.style.opacity = "1";
-    setTimeout(() => {
-        bemVindo.style.opacity = "0";
-    }, 3000);
+    setTimeout(() => { bemVindo.style.opacity = "0"; }, 3000);
 };
 </script>
 
