@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Antonella</title>
 <link rel="icon" href="icon.png" type="image/png">
+
 <style>
 html, body {
     margin: 0;
@@ -41,20 +42,21 @@ iframe {
 }
 </style>
 </head>
+
 <body>
 
 <h2 id="bemVindo"></h2>
 
-<iframe id="pbiFrame" src="https://app.powerbi.com/view?r=eyJrIjoiNjk0NGQ1M2ItNWZlNS00YzI2LTkwOGQtZWZlZmUyNmU1MGIzIiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9"></iframe>
+<iframe id="pbiFrame"></iframe>
 
 <script>
-// ---------------- Cookie ----------------
+// --------------- Cookies ---------------
 function getCookie(nome) {
     const match = document.cookie.match(new RegExp('(^| )' + nome + '=([^;]+)'));
     return match ? decodeURIComponent(match[2]) : null;
 }
 
-// ---------------- Registro no Google Sheets ----------------
+// --------------- Registro no Google Sheets ---------------
 async function registrarAcesso(usuario) {
     const apiUrl = "https://script.google.com/macros/s/AKfycbw8L0ZxkZxQ6E7BuqNPJDlr_xZTBVP12I8duKiU-Us1bS5slw7UJp_obNTrv2KuAuo/exec";
     const dispositivo = navigator.userAgent;
@@ -75,33 +77,46 @@ async function registrarAcesso(usuario) {
     });
 }
 
-// ---------------- Solicitar nome ----------------
+// --------------- Perguntar nome ---------------
 function solicitarNomeERegistrar() {
     const usuario = prompt("Digite seu nome para acessar:") || "Desconhecido";
-    document.cookie = `usuario=${encodeURIComponent(usuario)}; path=/; max-age=${60*60*24*365}; SameSite=Lax`;
+    document.cookie = `usuario=${encodeURIComponent(usuario)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
     registrarAcesso(usuario);
     return usuario;
 }
 
-// ---------------- Carregamento da página ----------------
-window.onload = function() {
+// --------------- Detectar Mobile ---------------
+function isMobile() {
+    return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+}
+
+// --------------- Ao carregar a página ---------------
+window.onload = function () {
+
     let usuario = getCookie("usuario");
     const bemVindo = document.getElementById("bemVindo");
     const iframe = document.getElementById("pbiFrame");
 
-    if(usuario){
-        // Usuário já existe
-        iframe.style.display = "block";
+    // ---- SEU LINK ORIGINAL DO POWER BI (SEM ALTERAR) ----
+    const baseLink = "https://app.powerbi.com/view?r=eyJrIjoiNjk0NGQ1M2ItNWZlNS00YzI2LTkwOGQtZWZlZmUyNmU1MGIzIiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9";
+
+    // ---- Detectar mobile/desktop e ativar layout correto ----
+    const mobile = isMobile();
+
+    // Se mobile, adiciona ?mobile=1
+    // Se desktop, adiciona ?mobile=0
+    iframe.src = baseLink + (mobile ? "&mobile=1" : "&mobile=0");
+
+    // ---- Saudações ----
+    if (usuario) {
         bemVindo.innerText = `Bem-vindo de volta, ${usuario}!`;
         registrarAcesso(usuario);
     } else {
-        // Novo usuário
         usuario = solicitarNomeERegistrar();
         bemVindo.innerText = `Bem-vindo, ${usuario}!`;
-        iframe.style.display = "block";
     }
 
-    // Mostrar mensagem temporária
+    // ---- Mostrar mensagem ----
     bemVindo.style.opacity = "1";
     setTimeout(() => {
         bemVindo.style.opacity = "0";
