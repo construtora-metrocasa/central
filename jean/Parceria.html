@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jean</title>
 <link rel="icon" href="icon.png" type="image/png">
+
 <style>
 html, body {
     margin: 0;
@@ -13,17 +14,14 @@ html, body {
     height: 100%;
     overflow: hidden;
     font-family: Arial, sans-serif;
+    background: #000;
 }
 
 iframe {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
     border: none;
 }
 
+/* Mensagem de boas-vindas */
 #bemVindo {
     position: fixed;
     top: 10px;
@@ -39,13 +37,75 @@ iframe {
     opacity: 0;
     transition: opacity 1s;
 }
+
+/* ------- CARROSSEL ------- */
+#carousel {
+    display: flex;
+    width: 200vw; /* 2 slides */
+    height: 100vh;
+    transition: transform 0.6s ease;
+}
+
+.slide {
+    width: 100vw;
+    height: 100vh;
+}
+
+.slide iframe {
+    width: 100%;
+    height: 100%;
+}
+
+/* Setas */
+.arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 2rem; /* menor */
+    color: white;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.25); /* mais translucido */
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 9999;
+    user-select: none;
+    opacity: 0.5; /* transparência */
+    transition: opacity .3s;
+}
+
+.arrow:hover {
+    opacity: 1; /* aparece mais no hover */
+    background: rgba(0,0,0,0.4);
+}
+
+#prev { left: 10px; }
+#next { right: 10px; }
+
+.arrow.hidden {
+    display: none; /* seta some */
+}
 </style>
 </head>
 <body>
 
 <h2 id="bemVindo"></h2>
 
-<iframe id="pbiFrame" src="https://app.powerbi.com/view?r=eyJrIjoiZWUzODcwOTMtMmE4Yy00MmZmLWE2YTktODY3ZmI1NDc0NTU0IiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9"></iframe>
+<!-- CARROSSEL -->
+<div id="carousel">
+    <!-- Slide 1 -->
+    <div class="slide">
+        <iframe src="https://app.powerbi.com/view?r=eyJrIjoiZWUzODcwOTMtMmE4Yy00MmZmLWE2YTktODY3ZmI1NDc0NTU0IiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9"></iframe>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="slide">
+        <iframe src="https://app.powerbi.com/view?r=eyJrIjoiNTY3MGI1ODAtOWIwYi00ZjJjLWE4ZDMtNzJlYjViYTM5YjQwIiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9"></iframe>
+    </div>
+</div>
+
+<!-- SETAS -->
+<div id="prev" class="arrow">&#10094;</div>
+<div id="next" class="arrow">&#10095;</div>
 
 <script>
 // ---------------- Cookie ----------------
@@ -87,18 +147,13 @@ function solicitarNomeERegistrar() {
 window.onload = function() {
     let usuario = getCookie("usuario");
     const bemVindo = document.getElementById("bemVindo");
-    const iframe = document.getElementById("pbiFrame");
 
     if(usuario){
-        // Usuário já existe
-        iframe.style.display = "block";
         bemVindo.innerText = `Bem-vindo de volta, ${usuario}!`;
         registrarAcesso(usuario);
     } else {
-        // Novo usuário
         usuario = solicitarNomeERegistrar();
         bemVindo.innerText = `Bem-vindo, ${usuario}!`;
-        iframe.style.display = "block";
     }
 
     // Mostrar mensagem temporária
@@ -107,6 +162,30 @@ window.onload = function() {
         bemVindo.style.opacity = "0";
     }, 3000);
 };
+
+// ---------------- Carrossel ----------------
+let index = 0;
+
+function updateArrows() {
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    const total = document.querySelectorAll(".slide").length;
+
+    prev.classList.toggle("hidden", index === 0);
+    next.classList.toggle("hidden", index === total - 1);
+}
+
+function showSlide(i) {
+    const slides = document.querySelectorAll(".slide");
+    index = Math.max(0, Math.min(i, slides.length - 1));
+    document.getElementById("carousel").style.transform = `translateX(-${index * 100}vw)`;
+    updateArrows();
+}
+
+document.getElementById("next").onclick = () => showSlide(index + 1);
+document.getElementById("prev").onclick = () => showSlide(index - 1);
+
+updateArrows(); // inicial
 </script>
 
 </body>
