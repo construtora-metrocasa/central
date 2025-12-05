@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <title>Login - Metrocasa</title>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js"></script>
+<!-- Firebase compat (modo antigo funcionando no v9) -->
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
 <script src="firebase.js"></script>
 
 <style>
@@ -60,7 +60,6 @@ async function loginGoogle() {
         const result = await firebase.auth().signInWithPopup(provider);
         const email = result.user.email;
 
-        // Bloqueio: aceitar apenas @metrocasa
         if (!email.includes("@metrocasa")) {
             alert("Acesso permitido somente para e-mails corporativos Metrocasa.");
             firebase.auth().signOut();
