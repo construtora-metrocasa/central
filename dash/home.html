@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Área Restrita</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js"></script>
+<script src="firebase.js"></script>
+
+<style>
+    body {
+        background: #0f0f0f;
+        color: white;
+        font-family: Arial;
+        padding: 40px;
+    }
+    button {
+        background: #ff4a4a;
+        border: none;
+        padding: 12px 20px;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<h1>Bem-vindo à área restrita</h1>
+<p id="email"></p>
+
+<button onclick="logout()">Sair</button>
+
+<script>
+firebase.auth().onAuthStateChanged((user) => {
+    if (!user) {
+        window.location.href = "login.html";
+    } else {
+        document.getElementById("email").textContent = 
+            "Logado como: " + user.email;
+    }
+});
+
+function logout() {
+    firebase.auth().signOut().then(() => {
+        window.location.href = "login.html";
+    });
+}
+</script>
+
+</body>
+</html>
