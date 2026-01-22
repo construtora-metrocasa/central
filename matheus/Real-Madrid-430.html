@@ -3,103 +3,138 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Site Descontinuado</title>
-<link rel="icon" href="icon.png" type="image/png">
-    <style>
-        body {
-            background-color: #f5f5f5;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 80px 20px;
-        }
-        .card {
-            background: white;
-            max-width: 500px;
-            margin: auto;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #d9534f;
-        }
-        p {
-            color: #555;
-            font-size: 18px;
-        }
-    </style>
+<title>404 – Site Virou Fantasma</title>
+
+<style>
+:root {
+    --bg: radial-gradient(circle at top, #2b2b3a, #0f0f17);
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --title-color: #d9534f;
+    --text-color: #444;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    font-family: Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 40px 20px;
+}
+
+.card {
+    position: relative;
+    background: var(--card-bg);
+    max-width: 540px;
+    padding: 45px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.35);
+    animation: fadeIn 1s ease-out, float 6s ease-in-out infinite;
+    z-index: 10;
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: var(--title-color);
+}
+
+h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #666;
+}
+
+p {
+    color: var(--text-color);
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+.ghost {
+    position: absolute;
+    font-size: 28px;
+    opacity: 0.8;
+    animation: ghostFloat linear infinite;
+    pointer-events: none;
+}
+
+/* animações */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes ghostFloat {
+    from {
+        transform: translateY(110vh) translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    to {
+        transform: translateY(-20vh) translateX(60px);
+        opacity: 0;
+    }
+}
+
+/* responsivo */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 38px;
+    }
+    p {
+        font-size: 16px;
+    }
+}
+</style>
 </head>
+
 <body>
-    <div class="card">
-        <h1>Site Descontinuado</h1>
-        <p>Este site não está mais disponível.</p>
-        <p>ASim… o site finalmente descansou. Virou lenda. Foi morar na nuvem (literalmente).
 
-Prometemos que ele não sofreu — só ficou velho demais para essa vida digital.
-
-Obrigado por ter visitado antes que ele virasse um fantasma da internet 👻.</p>
-    </div>
+<div class="card">
+    <h1>404</h1>
+    <h2>Oops… este site virou um fantasma 👻</h2>
+    <p>
+        ASim… o site finalmente descansou. Virou lenda.  
+        Foi morar na nuvem (literalmente).<br><br>
+        Prometemos que ele não sofreu —  
+        só ficou velho demais para essa vida digital.<br><br>
+        Obrigado por ter visitado antes que ele virasse  
+        um fantasma da internet 👻
+    </p>
+</div>
 
 <script>
-// ---------------- Cookie ----------------
-function getCookie(nome) {
-    const match = document.cookie.match(new RegExp('(^| )' + nome + '=([^;]+)'));
-    return match ? decodeURIComponent(match[2]) : null;
+const ghosts = 18;
+const emojis = ["👻", "💀", "🦴"];
+
+for (let i = 0; i < ghosts; i++) {
+    const ghost = document.createElement("div");
+    ghost.className = "ghost";
+    ghost.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+    ghost.style.left = Math.random() * 100 + "vw";
+    ghost.style.animationDuration = 8 + Math.random() * 10 + "s";
+    ghost.style.fontSize = 20 + Math.random() * 30 + "px";
+    ghost.style.animationDelay = Math.random() * 5 + "s";
+
+    document.body.appendChild(ghost);
 }
-
-// ---------------- Registro no Google Sheets ----------------
-async function registrarAcesso(usuario) {
-    const apiUrl = "https://script.google.com/macros/s/AKfycbw8L0ZxkZxQ6E7BuqNPJDlr_xZTBVP12I8duKiU-Us1bS5slw7UJp_obNTrv2KuAuo/exec";
-    const dispositivo = navigator.userAgent;
-    const horario = new Date().toISOString();
-    const link = window.location.href;
-
-    let ip = "";
-    try {
-        const r = await fetch("https://api.ipify.org?format=json");
-        ip = (await r.json()).ip;
-    } catch(e){}
-
-    fetch(apiUrl, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuario, link, horario, dispositivo, ip })
-    });
-}
-
-// ---------------- Solicitar nome ----------------
-function solicitarNomeERegistrar() {
-    const usuario = prompt("Digite seu nome para acessar:") || "Desconhecido";
-    document.cookie = `usuario=${encodeURIComponent(usuario)}; path=/; max-age=${60*60*24*365}; SameSite=Lax`;
-    registrarAcesso(usuario);
-    return usuario;
-}
-
-// ---------------- Carregamento da página ----------------
-window.onload = function() {
-    let usuario = getCookie("usuario");
-    const bemVindo = document.getElementById("bemVindo");
-    const iframe = document.getElementById("pbiFrame");
-
-    if(usuario){
-        // Usuário já existe
-        iframe.style.display = "block";
-        bemVindo.innerText = `Bem-vindo de volta, ${usuario}!`;
-        registrarAcesso(usuario);
-    } else {
-        // Novo usuário
-        usuario = solicitarNomeERegistrar();
-        bemVindo.innerText = `Bem-vindo, ${usuario}!`;
-        iframe.style.display = "block";
-    }
-
-    // Mostrar mensagem temporária
-    bemVindo.style.opacity = "1";
-    setTimeout(() => {
-        bemVindo.style.opacity = "0";
-    }, 3000);
-};
 </script>
 
 </body>
