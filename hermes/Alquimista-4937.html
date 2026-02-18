@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes</title>
+<link rel="icon" href="icon.png" type="image/png">
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+iframe {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+#bemVindo {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: rgba(255,255,255,0.9);
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: #333;
+    font-size: 1.2em;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 1s;
+}
+</style>
+</head>
+<body>
+
+<h2 id="bemVindo"></h2>
+
+<iframe id="pbiFrame" src="https://app.powerbi.com/view?r=eyJrIjoiYzIwMWE5MDQtYzY3Ni00MmE5LWI4OGEtMmVmZGEwNGIwMzhmIiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9"></iframe>
+
+<script>
+// ---------------- Cookie ----------------
+function getCookie(nome) {
+    const match = document.cookie.match(new RegExp('(^| )' + nome + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+}
+
+// ---------------- Registro no Google Sheets ----------------
+async function registrarAcesso(usuario) {
+    const apiUrl = "https://script.google.com/macros/s/AKfycbw8L0ZxkZxQ6E7BuqNPJDlr_xZTBVP12I8duKiU-Us1bS5slw7UJp_obNTrv2KuAuo/exec";
+    const dispositivo = navigator.userAgent;
+    const horario = new Date().toISOString();
+    const link = window.location.href;
+
+    let ip = "";
+    try {
+        const r = await fetch("https://api.ipify.org?format=json");
+        ip = (await r.json()).ip;
+    } catch(e){}
+
+    fetch(apiUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuario, link, horario, dispositivo, ip })
+    });
+}
+
+// ---------------- Solicitar nome ----------------
+function solicitarNomeERegistrar() {
+    const usuario = prompt("Digite seu nome para acessar:") || "Desconhecido";
+    document.cookie = `usuario=${encodeURIComponent(usuario)}; path=/; max-age=${60*60*24*365}; SameSite=Lax`;
+    registrarAcesso(usuario);
+    return usuario;
+}
+
+// ---------------- Carregamento da página ----------------
+window.onload = function() {
+    let usuario = getCookie("usuario");
+    const bemVindo = document.getElementById("bemVindo");
+    const iframe = document.getElementById("pbiFrame");
+
+    if(usuario){
+        // Usuário já existe
+        iframe.style.display = "block";
+        bemVindo.innerText = `Bem-vindo de volta, ${usuario}!`;
+        registrarAcesso(usuario);
+    } else {
+        // Novo usuário
+        usuario = solicitarNomeERegistrar();
+        bemVindo.innerText = `Bem-vindo, ${usuario}!`;
+        iframe.style.display = "block";
+    }
+
+    // Mostrar mensagem temporária
+    bemVindo.style.opacity = "1";
+    setTimeout(() => {
+        bemVindo.style.opacity = "0";
+    }, 3000);
+};
+</script>
+
+</body>
+</html>
