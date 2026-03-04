@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Yago</title>
 <link rel="icon" href="icon.png" type="image/png">
+
 <style>
 html, body {
     margin: 0;
@@ -15,15 +16,7 @@ html, body {
     font-family: Arial, sans-serif;
 }
 
-iframe {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-}
-
+/* Mensagem de boas-vindas */
 #bemVindo {
     position: fixed;
     top: 10px;
@@ -31,21 +24,90 @@ iframe {
     transform: translateX(-50%);
     z-index: 9999;
     background: rgba(255,255,255,0.9);
-    padding: 12px 20px;
+    padding: 10px 18px;
     border-radius: 8px;
     color: #333;
-    font-size: 1.2em;
+    font-size: 1.1em;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     opacity: 0;
     transition: opacity 1s;
 }
+
+/* Container do carrossel */
+#carouselContainer {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+}
+
+/* Iframes */
+.carouselFrame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+}
+
+.carouselFrame.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+/* Botões */
+.carouselBtn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 9999;
+
+    background: rgba(0,0,0,0.12);
+    color: white;
+    border: none;
+
+    font-size: 18px;
+    padding: 8px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+
+    backdrop-filter: blur(4px);
+
+    opacity: 0;
+    transition: opacity 0.4s ease, background 0.3s ease;
+}
+
+#prevBtn { left: 12px; }
+#nextBtn { right: 12px; }
+
+.carouselBtn:hover {
+    background: rgba(0,0,0,0.35);
+}
+
+/* aparecem quando mover o mouse */
+.showControls .carouselBtn {
+    opacity: 1;
+}
 </style>
 </head>
+
 <body>
 
 <h2 id="bemVindo"></h2>
 
-<iframe id="pbiFrame" src="https://app.powerbi.com/view?r=eyJrIjoiMjhkZjg2YjAtYWVhMy00MzVlLWFiY2EtZDg5ZWJhOTcwNjkyIiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9"></iframe>
+<div id="carouselContainer">
+    <iframe class="carouselFrame active" 
+        src="https://app.powerbi.com/view?r=eyJrIjoiMjhkZjg2YjAtYWVhMy00MzVlLWFiY2EtZDg5ZWJhOTcwNjkyIiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9">
+    </iframe>
+
+    <iframe class="carouselFrame" 
+        src="https://app.powerbi.com/view?r=eyJrIjoiODM5YjE5MTctOTU1Ny00MDJkLWEyMjMtMGUyN2MwMmIyODJkIiwidCI6ImM3NGViY2JkLWE4MGYtNDYwYy1hMDUzLTEwZDViNmY1ZWQwNSJ9">
+    </iframe>
+</div>
+
+<button id="prevBtn" class="carouselBtn">❮</button>
+<button id="nextBtn" class="carouselBtn">❯</button>
 
 <script>
 // ---------------- Cookie ----------------
@@ -83,25 +145,46 @@ function solicitarNomeERegistrar() {
     return usuario;
 }
 
-// ---------------- Carregamento da página ----------------
+// ---------------- Carrossel ----------------
+const frames = document.querySelectorAll(".carouselFrame");
+let index = 0;
+
+document.getElementById("nextBtn").onclick = () => {
+    frames[index].classList.remove("active");
+    index = (index + 1) % frames.length;
+    frames[index].classList.add("active");
+};
+
+document.getElementById("prevBtn").onclick = () => {
+    frames[index].classList.remove("active");
+    index = (index - 1 + frames.length) % frames.length;
+    frames[index].classList.add("active");
+};
+
+// ---------------- Mostrar botões só quando mover mouse ----------------
+let hideTimeout;
+document.addEventListener("mousemove", () => {
+    document.body.classList.add("showControls");
+
+    clearTimeout(hideTimeout);
+    hideTimeout = setTimeout(() => {
+        document.body.classList.remove("showControls");
+    }, 2500);
+});
+
+// ---------------- Carregamento ----------------
 window.onload = function() {
     let usuario = getCookie("usuario");
     const bemVindo = document.getElementById("bemVindo");
-    const iframe = document.getElementById("pbiFrame");
 
     if(usuario){
-        // Usuário já existe
-        iframe.style.display = "block";
         bemVindo.innerText = `Bem-vindo de volta, ${usuario}!`;
         registrarAcesso(usuario);
     } else {
-        // Novo usuário
         usuario = solicitarNomeERegistrar();
         bemVindo.innerText = `Bem-vindo, ${usuario}!`;
-        iframe.style.display = "block";
     }
 
-    // Mostrar mensagem temporária
     bemVindo.style.opacity = "1";
     setTimeout(() => {
         bemVindo.style.opacity = "0";
